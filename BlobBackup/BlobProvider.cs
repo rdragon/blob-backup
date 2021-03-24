@@ -117,6 +117,7 @@ namespace BlobBackup
         public async Task UploadIndex(IndexData index)
         {
             await UploadFile(_serializer.Serialize(index), GetIndexBlob(), "index", useCompression: true);
+            await UploadFile(_serializer.Serialize(index), GetIndexBackupBlob(), "index backup", useCompression: true);
         }
 
         public async Task<IndexData> DownloadIndex()
@@ -320,6 +321,8 @@ namespace BlobBackup
         }
 
         private IBlobClient GetIndexBlob() => Container.GetBlobClient($"{_settings.BlobStorageFolder}/index");
+
+        private IBlobClient GetIndexBackupBlob() => Container.GetBlobClient($"{_settings.BlobStorageFolder}/index-backups/{DateTime.UtcNow.Ticks}");
 
         private IBlobClient GetMainCipherKeyBlob() => Container.GetBlobClient($"{_settings.BlobStorageFolder}/main-cipher-key");
 
