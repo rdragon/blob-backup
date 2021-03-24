@@ -161,7 +161,9 @@ static CommandOption AddChangeKey(CommandLineApplication command)
 {
     return command.Option(
         "-ck|--change-key",
-        "Change the cipher key. No backup or restore operation is done.",
+        "Change the cipher key. No backup or restore operation is done. " +
+        "After changing the cipher key you manually need to remove the old main cipher key backup, " +
+        "otherwise you can still obtain the main cipher key by using the old cipher key and the backup.",
         CommandOptionType.NoValue);
 }
 

@@ -130,6 +130,7 @@ namespace BlobBackup
         public async Task UploadMainCipherKey(byte[] mainCipherKey)
         {
             await UploadFile(mainCipherKey, GetMainCipherKeyBlob(), "main cipher key");
+            await UploadFile(mainCipherKey, GetMainCipherKeyBackupBlob(), "main cipher key backup");
         }
 
         public async Task<byte[]> DownloadMainCipherKey()
@@ -325,6 +326,8 @@ namespace BlobBackup
         private IBlobClient GetIndexBackupBlob() => Container.GetBlobClient($"{_settings.BlobStorageFolder}/index-backups/{DateTime.UtcNow.Ticks}");
 
         private IBlobClient GetMainCipherKeyBlob() => Container.GetBlobClient($"{_settings.BlobStorageFolder}/main-cipher-key");
+
+        private IBlobClient GetMainCipherKeyBackupBlob() => Container.GetBlobClient($"{_settings.BlobStorageFolder}/main-cipher-key-backups/{DateTime.UtcNow.Ticks}");
 
         private IBlobClient GetShardTokenBlob(ShardId shardId)
         {

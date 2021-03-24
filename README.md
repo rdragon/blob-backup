@@ -31,7 +31,7 @@ Usage: `blob-backup <file-system-folder> <blob-storage-folder> [options]`
 | `‑at <tier>` or `‑‑access‑tier <tier>`   | The access tier to use for the shards. Possible values: archive, cool, hot. Archive is the default value. |
 | `‑c <name>` or `‑‑container <name>`      | The name of the blob container to use. Defaults to "blob‑backup". |
 | `‑cc` or `‑‑create‑container`     | Create the blob container (if it doesn't exist) before any other operation is done. |
-| `‑ck` or `‑‑change‑key`           | Change the cipher key. No backup or restore is done. |
+| `‑ck` or `‑‑change‑key`           | Change the cipher key. No backup or restore is done. After changing the cipher key you manually need to remove the old main cipher key backup, otherwise you can still obtain the main cipher key by using the old cipher key and the backup. |
 | `‑cs` or `‑‑copy‑shards`          | Copy the shards to the hot access tier. |
 | `‑ds` or `‑‑delete‑secrets`       | Delete the saved secrets so that new secrets can be submitted. Only the secrets for the current secrets identifier (see `--secret`) are deleted. |
 | `‑f` or `‑‑fake`                  | Do not upload anything, but show what would have been done. |
