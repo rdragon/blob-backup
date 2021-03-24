@@ -12,15 +12,18 @@ namespace BlobBackup
         private readonly FileProvider _fileProvider;
         private readonly Index _index;
         private readonly BlobProvider _blobProvider;
+        private readonly RestoreProviderSettings _settings;
 
         public RestoreProvider(
             FileProvider fileProvider,
             Index index,
-            BlobProvider blobProvider)
+            BlobProvider blobProvider,
+            RestoreProviderSettings settings)
         {
             _blobProvider = blobProvider;
             _index = index;
             _fileProvider = fileProvider;
+            _settings = settings;
         }
 
         public async Task CopyShards(Stopwatch? stopwatch = null)
@@ -74,7 +77,7 @@ namespace BlobBackup
                 await _index.LoadIndex();
                 await DownloadChunks();
 
-                foreach (var (fileId, fileToken) in _index.FileTokens)
+                foreach (var (fileId, fileToken) in _index.FileTokens.Where(pair => ShouldRestore(pair.Key)))
                 {
                     using (var fileStream = _fileProvider.OpenWrite(fileId))
                     {
@@ -118,7 +121,7 @@ namespace BlobBackup
         {
             var chunkIds = new HashSet<ChunkId>();
 
-            foreach (var (_, fileToken) in _index.FileTokens)
+            foreach (var (_, fileToken) in _index.FileTokens.Where(pair => ShouldRestore(pair.Key)))
             {
                 foreach (var chunkId in fileToken.ChunkIds)
                 {
@@ -130,6 +133,16 @@ namespace BlobBackup
             }
 
             return chunkIds;
+        }
+
+        private bool ShouldRestore(FileId fileId)
+        {
+            if (_settings.RestorePrefix is null)
+            {
+                return true;
+            }
+
+            return fileId.RelativePath.StartsWith(_settings.RestorePrefix);
         }
     }
 }

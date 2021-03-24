@@ -15,7 +15,7 @@ namespace BlobBackup
     public record IndexSettings(bool ResetIndex);
     public record SecretProviderSettings(string? SecretsFolder, string? ConnectionString, string? CipherSecret);
     public record ChunkProviderSettings(int ShardSizeBytes);
-    public record RestoreProviderSettings(bool Continue);
+    public record RestoreProviderSettings(string? RestorePrefix);
     public record AzureProviderSettings(string Container, bool CreateContainer);
     public record BlobContainerProviderSettings(bool NoAzure);
 

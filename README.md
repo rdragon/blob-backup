@@ -40,6 +40,7 @@ Usage: `blob-backup <file-system-folder> <blob-storage-folder> [options]`
 | `‑pi` or `‑‑print‑index`          | Print the index. No backup or restore is done. |
 | `‑r` or `‑‑restore`               | Restore the file system folder (instead of doing a backup). The folder needs to be empty. |
 | `‑ri` or `‑‑reset‑index`          | Replace the shard tokens in the index by the shard tokens found in the `shard‑tokens` folder in the blob storage. Also, file tokens that reference non‑existing chunks are deleted. |
+| `‑rp <path>` or `‑‑restore‑prefix <path>` | Only restore the files of which the relative path starts with the given path. |
 | `‑s <identifier>` or `‑‑secrets <identifier>`  | The secrets to use. For each identifier the secrets are stored separately. |
 | `‑smk` or `‑‑set‑main‑key`        | Set the main cipher key. This command is only for debugging, as you normally do not know the main cipher key. No backup or restore is done. |
 | `‑ss <MiB>` or `‑‑shard‑size <MiB>`     | The target shard size. Defaults to 512 MiB. If you change the shard size of an existing backup then files larger than the shard size need to be uploaded again after an index reset. |

@@ -26,6 +26,7 @@ namespace BlobBackup
             string fileSystemFolder,
             string container,
             string blobStorageFolder,
+            string? restorePrefix,
             bool resetIndex,
             bool createContainer,
             bool fake,
@@ -69,6 +70,7 @@ namespace BlobBackup
             services.TryAddSingleton(new BackupProviderSettings(shardSizeBytes));
             services.TryAddSingleton(new ChunkProviderSettings(shardSizeBytes));
             services.TryAddSingleton(new BlobContainerProviderSettings(noAzure));
+            services.TryAddSingleton(new RestoreProviderSettings(restorePrefix));
             services.TryAddSingleton(secretProviderSettings);
             services.TryAddSingleton<BackupProvider>();
             services.TryAddSingleton<BlobContainerProvider>();

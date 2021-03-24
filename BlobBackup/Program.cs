@@ -28,6 +28,7 @@ var noAzure = AddNoAzure(app);
 var noCompression = AddNoCompression(app);
 var printIndex = AddPrintIndex(app);
 var restore = AddRestore(app);
+var restorePrefix = AddRestorePrefix(app);
 var resetIndex = AddResetIndex(app);
 var secretsIdentifier = AddSecretsIdentifier(app);
 var setMainKey = AddSetMainKey(app);
@@ -53,6 +54,7 @@ app.OnExecute(async () =>
             fileSystemFolder: GetValue(fileSystemFolder),
             container: GetContainer(container),
             blobStorageFolder: GetValue(blobStorageFolder),
+            restorePrefix: TryGetValue(restorePrefix)?.Replace('\\', '/'),
             resetIndex: resetIndex.HasValue(),
             createContainer: createContainer.HasValue(),
             fake: fake.HasValue(),
@@ -275,6 +277,14 @@ static CommandOption AddSevenZip(CommandLineApplication command)
         "To use this feature the program 7-Zip needs to be installed on the system and the PATH environment variable needs to include " +
         "the path to the '7z' executable.",
         CommandOptionType.NoValue);
+}
+
+static CommandOption AddRestorePrefix(CommandLineApplication command)
+{
+    return command.Option(
+        "-rp|--restore-prefix <path>",
+        "Only restore the files of which the relative path starts with the given path.",
+        CommandOptionType.SingleValue);
 }
 
 static string? TryGetValue(CommandOption commandOption)

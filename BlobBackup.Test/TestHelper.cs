@@ -96,6 +96,7 @@ namespace BlobBackup.Test
                     chunksFolder: chunksFolder.Path,
                     container: noAzure ? driveContainer.Path : azureContainer.Container,
                     blobStorageFolder: TestConstants.EXAMPLE_NAME,
+                    restorePrefix: null,
                     resetIndex: false,
                     createContainer: true,
                     fake: false,
