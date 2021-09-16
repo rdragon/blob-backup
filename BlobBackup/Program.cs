@@ -31,6 +31,7 @@ var restore = AddRestore(app);
 var restorePrefix = AddRestorePrefix(app);
 var resetIndex = AddResetIndex(app);
 var secretsIdentifier = AddSecretsIdentifier(app);
+var secretsFolder = AddSecretsFolder(app);
 var setMainKey = AddSetMainKey(app);
 var shardSize = AddShardSize(app);
 var verbose = AddVerbose(app);
@@ -62,7 +63,7 @@ app.OnExecute(async () =>
             noCompression: noCompression.HasValue(),
             noAzure: noAzure.HasValue(),
             deleteSecrets: deleteSecrets.HasValue(),
-            secretsFolder: GetSecretsFolder(secretsIdentifier),
+            secretsFolder: GetSecretsFolder(secretsIdentifier, secretsFolder),
             shardSizeBytes: GetShardSizeBytes(shardSize),
             verbose: verbose.HasValue());
         var mainCipherKeyLoader = serviceProvider.GetRequiredService<MainCipherKeyLoader>();
@@ -242,6 +243,14 @@ static CommandOption AddSecretsIdentifier(CommandLineApplication command)
         CommandOptionType.SingleValue);
 }
 
+static CommandOption AddSecretsFolder(CommandLineApplication command)
+{
+    return command.Option(
+        "-sf|--secrets-folder <path>",
+        "The folder to store the secrets.",
+        CommandOptionType.SingleValue);
+}
+
 static CommandOption AddSetMainKey(CommandLineApplication command)
 {
     return command.Option(
@@ -314,9 +323,11 @@ static string GetValue(CommandArgument commandArgument)
     return commandArgument.Value;
 }
 
-static string GetSecretsFolder(CommandOption secretsIdentifier)
+static string GetSecretsFolder(CommandOption secretsIdentifier, CommandOption secretsFolder)
 {
-    return Path.Combine(ServiceProviderProvider.DefaultDataFolder, TryGetValue(secretsIdentifier) ?? "default");
+    var baseFolder = TryGetValue(secretsFolder) ?? ServiceProviderProvider.DefaultDataFolder;
+
+    return Path.Combine(baseFolder, TryGetValue(secretsIdentifier) ?? "default");
 }
 
 static int GetShardSizeBytes(CommandOption shardSize)
