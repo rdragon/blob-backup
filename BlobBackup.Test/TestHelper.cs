@@ -11,23 +11,10 @@ namespace BlobBackup.Test
 {
     public static class TestHelper
     {
-
-        private static RandomProvider? _randomProvider;
-
-        private static RandomProvider RandomProvider
-        {
-            get
-            {
-                _randomProvider ??= new RandomProvider();
-
-                return _randomProvider;
-            }
-        }
-
         /// <summary>
         /// Returns a random unique string of length 32 consisting of the characters 0-9a-f.
         /// </summary>
-        public static string GetRandomUniqueString() => RandomProvider.GetBytes(16).GetHexString();
+        public static string GetRandomUniqueString() => RandomNumberGenerator.GetBytes(16).GetHexString();
 
         public static async Task RunWithInstanceFactory<T>(Random random, Func<Func<T>, Task> func) where T : notnull
         {

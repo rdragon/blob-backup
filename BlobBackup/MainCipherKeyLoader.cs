@@ -10,7 +10,6 @@ namespace BlobBackup
     public class MainCipherKeyLoader
     {
         private readonly BlobProvider _blobProvider;
-        private readonly RNGCryptoServiceProvider _rngCryptoServiceProvider;
         private readonly Cipher _cipher;
         private readonly SecretProvider _secretProvider;
 
@@ -19,7 +18,6 @@ namespace BlobBackup
             _secretProvider = secretProvider;
             _cipher = cipher;
             _blobProvider = blobProvider;
-            _rngCryptoServiceProvider = new RNGCryptoServiceProvider();
         }
 
         public async Task LoadMainCipherKey()
@@ -35,8 +33,7 @@ namespace BlobBackup
                 throw new Exception($"The blob storage folder is corrupted. The main cipher key cannot be found.");
             }
 
-            var mainCipherKey = new byte[32];
-            _rngCryptoServiceProvider.GetBytes(mainCipherKey);
+            var mainCipherKey = RandomNumberGenerator.GetBytes(32);
             await SaveMainCipherKey(mainCipherKey);
         }
 

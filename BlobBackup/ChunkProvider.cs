@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,11 +16,9 @@ namespace BlobBackup
         private readonly Index _index;
         private readonly ChunkProviderSettings _settings;
         private readonly BlobProvider _blobProvider;
-        private readonly RandomProvider _randomProvider;
 
-        public ChunkProvider(Index index, ChunkProviderSettings settings, BlobProvider blobProvider, RandomProvider randomProvider)
+        public ChunkProvider(Index index, ChunkProviderSettings settings, BlobProvider blobProvider)
         {
-            _randomProvider = randomProvider;
             _blobProvider = blobProvider;
             _settings = settings;
             _index = index;
@@ -67,7 +66,7 @@ namespace BlobBackup
 
         private async Task UploadShard(IReadOnlyList<Chunk> chunks)
         {
-            var shardId = new ShardId(_randomProvider.GetBytes(16));
+            var shardId = new ShardId(RandomNumberGenerator.GetBytes(16));
             var compressionType = await _blobProvider.UploadShard(shardId, chunks.SelectMany(chunk => chunk.Raw.Bytes).ToArray());
             var shardToken = new ShardToken(chunks.Select(chunk => chunk.GetChunkToken()).ToArray(), compressionType);
             await _index.AddShardToken(shardId, shardToken);

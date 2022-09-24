@@ -16,9 +16,7 @@ namespace BlobBackup
         /// </summary>
         public static byte[] GetSha256Hash(this byte[] bytes)
         {
-            using var sha256 = new SHA256Managed();
-
-            return sha256.ComputeHash(bytes);
+            return SHA256.HashData(bytes);
         }
 
         /// <summary>
@@ -242,6 +240,25 @@ namespace BlobBackup
         public static int GetSequenceEqualHashCode<T>(this IReadOnlyList<T> values)
         {
             return HashCode.Combine(values.Count, values.FirstOrDefault());
+        }
+
+        /// <summary>
+        /// Like <see cref="CryptoStream.Read(byte[], int, int)"/> but reads as much bytes as possible.
+        /// </summary>
+        public static int ReadAll(this CryptoStream cryptoStream, byte[] bytes, int offset, int count)
+        {
+            var totalBytesRead = 0;
+            int bytesRead;
+
+            do
+            {
+                bytesRead = cryptoStream.Read(bytes, offset, count);
+                totalBytesRead += bytesRead;
+                offset += bytesRead;
+                count -= bytesRead;
+            } while (bytesRead > 0 && count > 0);
+
+            return totalBytesRead;
         }
     }
 }

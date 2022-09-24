@@ -82,7 +82,6 @@ namespace BlobBackup
             services.TryAddSingleton<Cipher>();
             services.TryAddSingleton<SecretProvider>();
             services.TryAddSingleton<ChunkProvider>();
-            services.TryAddSingleton<RandomProvider>();
             services.TryAddSingleton<Serializer>();
             services.TryAddSingleton<MainCipherKeyLoader>();
             services.AddLogging();

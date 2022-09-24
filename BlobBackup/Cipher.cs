@@ -17,7 +17,6 @@ namespace BlobBackup
 
         private byte[]? _key;
 
-        private readonly RNGCryptoServiceProvider _rngCryptoServiceProvider = new RNGCryptoServiceProvider();
         private readonly SecretProvider? _secretProvider;
 
         public Cipher(SecretProvider secretProvider)
@@ -38,14 +37,11 @@ namespace BlobBackup
         {
             var key = Key;
 
-            using var aes = new AesManaged
-            {
-                KeySize = key.Length * 8,
-                Mode = CipherMode.CBC,
-                Padding = PaddingMode.PKCS7
-            };
-            var iv = new byte[BLOCK_SIZE_BYTES];
-            _rngCryptoServiceProvider.GetBytes(iv);
+            using var aes = Aes.Create();
+            aes.KeySize = key.Length * 8;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            var iv = RandomNumberGenerator.GetBytes(BLOCK_SIZE_BYTES);
             using var transform = aes.CreateEncryptor(key, iv);
             using var memoryStream = new MemoryStream();
             using var cryptoStream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Write);
@@ -79,7 +75,7 @@ namespace BlobBackup
                 return null;
             }
 
-            using var aes = new AesManaged();
+            using var aes = Aes.Create();
             using var hmac = new HMACSHA256(key);
             var actualHmac = hmac.ComputeHash(data, 0, BLOCK_SIZE_BYTES + n);
             var expectedHmac = GetSubArray(data, BLOCK_SIZE_BYTES + n, HMAC_SIZE_BYTES);
@@ -98,7 +94,7 @@ namespace BlobBackup
             using var transform = aes.CreateDecryptor(key, iv);
             using var memoryStream = new MemoryStream(data, BLOCK_SIZE_BYTES, n);
             using var cryptoStream = new CryptoStream(memoryStream, transform, CryptoStreamMode.Read);
-            readCount = cryptoStream.Read(buffer, 0, buffer.Length);
+            readCount = cryptoStream.ReadAll(buffer, 0, buffer.Length);
 
             return GetSubArray(buffer, 0, readCount);
         }
