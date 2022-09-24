@@ -88,3 +88,6 @@ The paths are taken relative to the file system folder. Also, the path delimiter
 If the program stops (e.g. an error occurs) before the index could be saved, then the next time the program automatically starts with an index reset. During an index reset, all shard tokens are downloaded from the blob storage to determine which shards (and therefore which chunks) can be found in the blob storage. The shards in the index are replaced by the found shards.
 
 In addition, during an index reset all file tokens in the index that refer to unknown chunks are removed from the index.
+
+### Unit tests
+To run the unit tests you'll first need to install and start [Azurite](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite).
