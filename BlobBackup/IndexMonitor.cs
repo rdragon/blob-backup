@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BlobBackup;
+﻿namespace BlobBackup;
 
 /// <summary>
 /// Keeps track of whether shards have been created or deleted and the stored index doesn't know this yet.

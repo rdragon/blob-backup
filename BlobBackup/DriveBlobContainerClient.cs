@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace BlobBackup;
+﻿namespace BlobBackup;
 
 public class DriveBlobContainerClient : IBlobContainerClient
 {
