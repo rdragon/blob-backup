@@ -5,67 +5,66 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public class MainCipherKeyLoader
 {
-    public class MainCipherKeyLoader
+    private readonly BlobProvider _blobProvider;
+    private readonly Cipher _cipher;
+    private readonly SecretProvider _secretProvider;
+
+    public MainCipherKeyLoader(BlobProvider blobProvider, Cipher cipher, SecretProvider secretProvider)
     {
-        private readonly BlobProvider _blobProvider;
-        private readonly Cipher _cipher;
-        private readonly SecretProvider _secretProvider;
+        _secretProvider = secretProvider;
+        _cipher = cipher;
+        _blobProvider = blobProvider;
+    }
 
-        public MainCipherKeyLoader(BlobProvider blobProvider, Cipher cipher, SecretProvider secretProvider)
+    public async Task LoadMainCipherKey()
+    {
+        if (await _blobProvider.MainCipherKeyExists())
         {
-            _secretProvider = secretProvider;
-            _cipher = cipher;
-            _blobProvider = blobProvider;
+            UpdateCipher(await _blobProvider.DownloadMainCipherKey());
+            return;
         }
 
-        public async Task LoadMainCipherKey()
+        if (await _blobProvider.IndexExists() || (await _blobProvider.DownloadShardTokens().ToListAsync()).Count > 0)
         {
-            if (await _blobProvider.MainCipherKeyExists())
-            {
-                UpdateCipher(await _blobProvider.DownloadMainCipherKey());
-                return;
-            }
-
-            if (await _blobProvider.IndexExists() || (await _blobProvider.DownloadShardTokens().ToListAsync()).Count > 0)
-            {
-                throw new Exception($"The blob storage folder is corrupted. The main cipher key cannot be found.");
-            }
-
-            var mainCipherKey = RandomNumberGenerator.GetBytes(32);
-            await SaveMainCipherKey(mainCipherKey);
+            throw new Exception($"The blob storage folder is corrupted. The main cipher key cannot be found.");
         }
 
-        public async Task SaveMainCipherKey(byte[] mainCipherKey)
+        var mainCipherKey = RandomNumberGenerator.GetBytes(32);
+        await SaveMainCipherKey(mainCipherKey);
+    }
+
+    public async Task SaveMainCipherKey(byte[] mainCipherKey)
+    {
+        await _blobProvider.UploadMainCipherKey(mainCipherKey);
+        UpdateCipher(mainCipherKey);
+    }
+
+    public async Task ChangeCipherKey()
+    {
+        var mainCipherKey = await _blobProvider.DownloadMainCipherKey();
+        _secretProvider.DeleteSecret(SecretType.CipherKey);
+        _cipher.DeleteKey();
+        await SaveMainCipherKey(mainCipherKey);
+    }
+
+    public async Task SetMainCipherKey()
+    {
+        Helper.WriteLine("Please provide the main cipher key:");
+
+        if (Console.ReadLine() is not string text)
         {
-            await _blobProvider.UploadMainCipherKey(mainCipherKey);
-            UpdateCipher(mainCipherKey);
+            throw new Exception($"Unexpected end of stream.");
         }
 
-        public async Task ChangeCipherKey()
-        {
-            var mainCipherKey = await _blobProvider.DownloadMainCipherKey();
-            _secretProvider.DeleteSecret(SecretType.CipherKey);
-            _cipher.DeleteKey();
-            await SaveMainCipherKey(mainCipherKey);
-        }
+        await SaveMainCipherKey(text.GetCipherKey());
+    }
 
-        public async Task SetMainCipherKey()
-        {
-            Helper.WriteLine("Please provide the main cipher key:");
-
-            if (Console.ReadLine() is not string text)
-            {
-                throw new Exception($"Unexpected end of stream.");
-            }
-
-            await SaveMainCipherKey(text.GetCipherKey());
-        }
-
-        private void UpdateCipher(byte[] cipherKey)
-        {
-            _cipher.Key = cipherKey;
-        }
+    private void UpdateCipher(byte[] cipherKey)
+    {
+        _cipher.Key = cipherKey;
     }
 }

@@ -5,33 +5,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public class AzureBlobContainerClient : IBlobContainerClient
 {
-    public class AzureBlobContainerClient : IBlobContainerClient
+    private readonly BlobContainerClient _blobContainerClient;
+
+    public AzureBlobContainerClient(BlobContainerClient blobContainerClient)
     {
-        private readonly BlobContainerClient _blobContainerClient;
+        _blobContainerClient = blobContainerClient;
+    }
 
-        public AzureBlobContainerClient(BlobContainerClient blobContainerClient)
-        {
-            _blobContainerClient = blobContainerClient;
-        }
+    public async Task CreateIfNotExists()
+    {
+        await _blobContainerClient.CreateIfNotExistsAsync();
+    }
 
-        public async Task CreateIfNotExists()
-        {
-            await _blobContainerClient.CreateIfNotExistsAsync();
-        }
+    public IBlobClient GetBlobClient(string blobName)
+    {
+        return new AzureBlobClient(_blobContainerClient.GetBlobClient(blobName));
+    }
 
-        public IBlobClient GetBlobClient(string blobName)
+    public async IAsyncEnumerable<IBlobHierarchyItem> GetBlobsByHierarchy(string folderBlobName)
+    {
+        await foreach (var item in _blobContainerClient.GetBlobsByHierarchyAsync(prefix: folderBlobName + "/"))
         {
-            return new AzureBlobClient(_blobContainerClient.GetBlobClient(blobName));
-        }
-
-        public async IAsyncEnumerable<IBlobHierarchyItem> GetBlobsByHierarchy(string folderBlobName)
-        {
-            await foreach (var item in _blobContainerClient.GetBlobsByHierarchyAsync(prefix: folderBlobName + "/"))
-            {
-                yield return new AzureBlobHierarcyItem(item);
-            }
+            yield return new AzureBlobHierarcyItem(item);
         }
     }
 }

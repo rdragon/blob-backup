@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public interface IBlobHierarchyItem
 {
-    public interface IBlobHierarchyItem
-    {
-        string BlobName { get; }
-    }
+    string BlobName { get; }
 }

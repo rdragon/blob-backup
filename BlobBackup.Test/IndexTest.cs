@@ -6,29 +6,28 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace BlobBackup.Test
+namespace BlobBackup.Test;
+
+public class IndexTest
 {
-    public class IndexTest
+    [Theory]
+    [ClassData(typeof(Seeds))]
+    public async Task SaveFileToken(int seed)
     {
-        [Theory]
-        [ClassData(typeof(Seeds))]
-        public async Task SaveFileToken(int seed)
+        var random = new Random(seed);
+
+        await TestHelper.RunWithInstanceFactory<Index>(random, async createIndex =>
         {
-            var random = new Random(seed);
+            var index = createIndex();
+            var relativePath = random.GetFileId();
+            var fileToken = random.GetFileToken();
+            index.AddOrReplaceFileToken(relativePath, fileToken);
+            await index.SaveIndex();
+            index = createIndex();
+            await index.LoadIndex();
 
-            await TestHelper.RunWithInstanceFactory<Index>(random, async createIndex =>
-            {
-                var index = createIndex();
-                var relativePath = random.GetFileId();
-                var fileToken = random.GetFileToken();
-                index.AddOrReplaceFileToken(relativePath, fileToken);
-                await index.SaveIndex();
-                index = createIndex();
-                await index.LoadIndex();
-
-                Assert.Equal(new[] { relativePath }, index.FileTokens.Keys.ToArray());
-                Assert.Equal(new[] { fileToken }, index.FileTokens.Values.ToArray());
-            });
-        }
+            Assert.Equal(new[] { relativePath }, index.FileTokens.Keys.ToArray());
+            Assert.Equal(new[] { fileToken }, index.FileTokens.Values.ToArray());
+        });
     }
 }

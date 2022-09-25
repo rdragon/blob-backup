@@ -5,23 +5,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup.Test
+namespace BlobBackup.Test;
+
+public sealed class TemporaryFolder : IDisposable
 {
-    public sealed class TemporaryFolder : IDisposable
+    public string Path { get; }
+
+    public TemporaryFolder()
     {
-        public string Path { get; }
+        Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "blob-backup-test", TestHelper.GetRandomUniqueString());
+    }
 
-        public TemporaryFolder()
+    public void Dispose()
+    {
+        if (Directory.Exists(Path))
         {
-            Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "blob-backup-test", TestHelper.GetRandomUniqueString());
-        }
-
-        public void Dispose()
-        {
-            if (Directory.Exists(Path))
-            {
-                Directory.Delete(Path, recursive: true);
-            }
+            Directory.Delete(Path, recursive: true);
         }
     }
 }

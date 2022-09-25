@@ -6,39 +6,38 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace BlobBackup.Test
+namespace BlobBackup.Test;
+
+public class IndexMonitorTest
 {
-    public class IndexMonitorTest
+    [Theory]
+    [ClassData(typeof(Seeds))]
+    public async Task Changed(int seed)
     {
-        [Theory]
-        [ClassData(typeof(Seeds))]
-        public async Task Changed(int seed)
+        await TestHelper.RunWithInstanceFactory<IndexMonitor>(seed.GetRandom(), async createIndexMonitor =>
         {
-            await TestHelper.RunWithInstanceFactory<IndexMonitor>(seed.GetRandom(), async createIndexMonitor =>
-            {
-                await Task.CompletedTask;
-                var indexMonitor = createIndexMonitor();
-                indexMonitor.ShardsChanged = true;
-                indexMonitor = createIndexMonitor();
+            await Task.CompletedTask;
+            var indexMonitor = createIndexMonitor();
+            indexMonitor.ShardsChanged = true;
+            indexMonitor = createIndexMonitor();
 
-                Assert.True(indexMonitor.ShardsChanged);
-            });
-        }
+            Assert.True(indexMonitor.ShardsChanged);
+        });
+    }
 
-        [Theory]
-        [ClassData(typeof(Seeds))]
-        public async Task NotChanged(int seed)
+    [Theory]
+    [ClassData(typeof(Seeds))]
+    public async Task NotChanged(int seed)
+    {
+        await TestHelper.RunWithInstanceFactory<IndexMonitor>(seed.GetRandom(), async createIndexMonitor =>
         {
-            await TestHelper.RunWithInstanceFactory<IndexMonitor>(seed.GetRandom(), async createIndexMonitor =>
-            {
-                await Task.CompletedTask;
-                var indexMonitor = createIndexMonitor();
-                indexMonitor.ShardsChanged = true;
-                indexMonitor.ShardsChanged = false;
-                indexMonitor = createIndexMonitor();
+            await Task.CompletedTask;
+            var indexMonitor = createIndexMonitor();
+            indexMonitor.ShardsChanged = true;
+            indexMonitor.ShardsChanged = false;
+            indexMonitor = createIndexMonitor();
 
-                Assert.False(indexMonitor.ShardsChanged);
-            });
-        }
+            Assert.False(indexMonitor.ShardsChanged);
+        });
     }
 }

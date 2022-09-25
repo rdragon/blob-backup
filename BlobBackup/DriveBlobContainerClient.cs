@@ -5,40 +5,39 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public class DriveBlobContainerClient : IBlobContainerClient
 {
-    public class DriveBlobContainerClient : IBlobContainerClient
+    private readonly string _path;
+
+    public DriveBlobContainerClient(string path) => _path = path.Replace('/', Path.DirectorySeparatorChar);
+
+    public async Task CreateIfNotExists()
     {
-        private readonly string _path;
+        await Task.CompletedTask;
+        Directory.CreateDirectory(_path);
+    }
 
-        public DriveBlobContainerClient(string path) => _path = path.Replace('/', Path.DirectorySeparatorChar);
+    public IBlobClient GetBlobClient(string blobName)
+    {
+        return new DriveBlobClient(Path.Combine(_path, blobName.Replace('/', Path.DirectorySeparatorChar)));
+    }
 
-        public async Task CreateIfNotExists()
+    public async IAsyncEnumerable<IBlobHierarchyItem> GetBlobsByHierarchy(string folder)
+    {
+        await Task.CompletedTask;
+
+        if (Directory.Exists(_path))
         {
-            await Task.CompletedTask;
-            Directory.CreateDirectory(_path);
-        }
-
-        public IBlobClient GetBlobClient(string blobName)
-        {
-            return new DriveBlobClient(Path.Combine(_path, blobName.Replace('/', Path.DirectorySeparatorChar)));
-        }
-
-        public async IAsyncEnumerable<IBlobHierarchyItem> GetBlobsByHierarchy(string folder)
-        {
-            await Task.CompletedTask;
-
-            if (Directory.Exists(_path))
+            foreach (var path in Directory.GetFiles(_path, "*", SearchOption.AllDirectories))
             {
-                foreach (var path in Directory.GetFiles(_path, "*", SearchOption.AllDirectories))
+                if (!path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!path.StartsWith(_path, StringComparison.OrdinalIgnoreCase))
-                    {
-                        throw new Exception($"This should not happen.");
-                    }
-
-                    yield return new DriveBlobHierarchyItem(path[_path.Length..]);
+                    throw new Exception($"This should not happen.");
                 }
+
+                yield return new DriveBlobHierarchyItem(path[_path.Length..]);
             }
         }
     }

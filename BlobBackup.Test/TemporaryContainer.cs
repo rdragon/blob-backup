@@ -5,22 +5,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup.Test
+namespace BlobBackup.Test;
+
+public sealed class TemporaryContainer : IDisposable
 {
-    public sealed class TemporaryContainer : IDisposable
+    public string Container { get; }
+
+    public TemporaryContainer()
     {
-        public string Container { get; }
+        Container = TestHelper.GetRandomUniqueString();
+    }
 
-        public TemporaryContainer()
-        {
-            Container = TestHelper.GetRandomUniqueString();
-        }
+    public static string ConnectionString => "UseDevelopmentStorage=true";
 
-        public static string ConnectionString => "UseDevelopmentStorage=true";
-
-        public void Dispose()
-        {
-            new BlobServiceClient(ConnectionString).GetBlobContainerClient(Container).DeleteIfExists();
-        }
+    public void Dispose()
+    {
+        new BlobServiceClient(ConnectionString).GetBlobContainerClient(Container).DeleteIfExists();
     }
 }

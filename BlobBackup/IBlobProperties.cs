@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public interface IBlobProperties
 {
-    public interface IBlobProperties
-    {
-        string AccessTier { get; }
-        CopyStatus CopyStatus { get; }
-    }
+    string AccessTier { get; }
+    CopyStatus CopyStatus { get; }
 }

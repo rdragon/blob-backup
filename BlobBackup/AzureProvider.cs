@@ -5,38 +5,37 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public class AzureProvider
 {
-    public class AzureProvider
+    private BlobContainerClient? _container;
+
+    private readonly BlobServiceClient _blobServiceClient;
+    private readonly AzureProviderSettings _settings;
+
+    public AzureProvider(BlobServiceClient blobServiceClient, AzureProviderSettings settings)
     {
-        private BlobContainerClient? _container;
+        _settings = settings;
+        _blobServiceClient = blobServiceClient;
+    }
 
-        private readonly BlobServiceClient _blobServiceClient;
-        private readonly AzureProviderSettings _settings;
-
-        public AzureProvider(BlobServiceClient blobServiceClient, AzureProviderSettings settings)
+    private BlobContainerClient Container
+    {
+        get
         {
-            _settings = settings;
-            _blobServiceClient = blobServiceClient;
-        }
-
-        private BlobContainerClient Container
-        {
-            get
+            if (_container is null)
             {
-                if (_container is null)
+                _container = _blobServiceClient.GetBlobContainerClient(_settings.Container);
+
+                if (_settings.CreateContainer)
                 {
-                    _container = _blobServiceClient.GetBlobContainerClient(_settings.Container);
-
-                    if (_settings.CreateContainer)
-                    {
-                        // This line is not executed always as it's another call to the blob storage.
-                        _container.CreateIfNotExists();
-                    }
+                    // This line is not executed always as it's another call to the blob storage.
+                    _container.CreateIfNotExists();
                 }
-
-                return _container;
             }
+
+            return _container;
         }
     }
 }

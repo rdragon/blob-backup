@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup.Test
+namespace BlobBackup.Test;
+
+public static class TestConstants
 {
-    public static class TestConstants
-    {
-        public const string EXAMPLE_NAME = "example-name";
-    }
+    public const string EXAMPLE_NAME = "example-name";
 }

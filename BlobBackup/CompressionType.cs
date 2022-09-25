@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public enum CompressionType
 {
-    public enum CompressionType
-    {
-        None = 0,
-        GZip = 1,
-        SevenZip = 2,
-    }
+    None = 0,
+    GZip = 1,
+    SevenZip = 2,
 }

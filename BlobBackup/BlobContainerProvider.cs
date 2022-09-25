@@ -5,27 +5,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public class BlobContainerProvider
 {
-    public class BlobContainerProvider
+    private readonly BlobContainerProviderSettings _settings;
+    private readonly BlobServiceClient _blobServiceClient;
+
+    public BlobContainerProvider(BlobContainerProviderSettings settings, BlobServiceClient blobServiceClient)
     {
-        private readonly BlobContainerProviderSettings _settings;
-        private readonly BlobServiceClient _blobServiceClient;
+        _blobServiceClient = blobServiceClient;
+        _settings = settings;
+    }
 
-        public BlobContainerProvider(BlobContainerProviderSettings settings, BlobServiceClient blobServiceClient)
+    public IBlobContainerClient GetContainer(string blobContainerName)
+    {
+        if (_settings.NoAzure)
         {
-            _blobServiceClient = blobServiceClient;
-            _settings = settings;
+            return new DriveBlobContainerClient(blobContainerName);
         }
 
-        public IBlobContainerClient GetContainer(string blobContainerName)
-        {
-            if (_settings.NoAzure)
-            {
-                return new DriveBlobContainerClient(blobContainerName);
-            }
-
-            return new AzureBlobContainerClient(_blobServiceClient.GetBlobContainerClient(blobContainerName));
-        }
+        return new AzureBlobContainerClient(_blobServiceClient.GetBlobContainerClient(blobContainerName));
     }
 }

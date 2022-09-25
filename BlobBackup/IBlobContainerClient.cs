@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public interface IBlobContainerClient
 {
-    public interface IBlobContainerClient
-    {
-        Task CreateIfNotExists();
-        IBlobClient GetBlobClient(string blobName);
-        IAsyncEnumerable<IBlobHierarchyItem> GetBlobsByHierarchy(string folder);
-    }
+    Task CreateIfNotExists();
+    IBlobClient GetBlobClient(string blobName);
+    IAsyncEnumerable<IBlobHierarchyItem> GetBlobsByHierarchy(string folder);
 }

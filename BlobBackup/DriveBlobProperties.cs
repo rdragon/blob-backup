@@ -5,12 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
-{
-    public class DriveBlobProperties : IBlobProperties
-    {
-        public string AccessTier => "Hot";
+namespace BlobBackup;
 
-        public CopyStatus CopyStatus => CopyStatus.Success;
-    }
+public class DriveBlobProperties : IBlobProperties
+{
+    public string AccessTier => "Hot";
+
+    public CopyStatus CopyStatus => CopyStatus.Success;
 }

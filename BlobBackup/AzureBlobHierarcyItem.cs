@@ -5,17 +5,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public class AzureBlobHierarcyItem : IBlobHierarchyItem
 {
-    public class AzureBlobHierarcyItem : IBlobHierarchyItem
+    private readonly BlobHierarchyItem _blobHierarchyItem;
+
+    public AzureBlobHierarcyItem(BlobHierarchyItem blobHierarchyItem)
     {
-        private readonly BlobHierarchyItem _blobHierarchyItem;
-
-        public AzureBlobHierarcyItem(BlobHierarchyItem blobHierarchyItem)
-        {
-            _blobHierarchyItem = blobHierarchyItem;
-        }
-
-        public string BlobName => _blobHierarchyItem.Blob.Name;
+        _blobHierarchyItem = blobHierarchyItem;
     }
+
+    public string BlobName => _blobHierarchyItem.Blob.Name;
 }

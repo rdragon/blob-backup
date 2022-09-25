@@ -6,69 +6,68 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public class DriveBlobClient : IBlobClient
 {
-    public class DriveBlobClient : IBlobClient
+    public string Name { get; }
+
+    public DriveBlobClient(string path) => Name = path;
+
+    private string FilePath => Name;
+
+    public async Task<bool> Exists()
     {
-        public string Name { get; }
+        await Task.CompletedTask;
 
-        public DriveBlobClient(string path) => Name = path;
+        return File.Exists(FilePath);
+    }
 
-        private string FilePath => Name;
+    public async Task StartCopy(IBlobClient source, AccessTier accessTier)
+    {
+        await Task.CompletedTask;
 
-        public async Task<bool> Exists()
+        if (source is null)
         {
-            await Task.CompletedTask;
-
-            return File.Exists(FilePath);
+            throw new ArgumentNullException(nameof(source));
         }
 
-        public async Task StartCopy(IBlobClient source, AccessTier accessTier)
+        var driveBlobClient = source as DriveBlobClient ??
+            throw new ArgumentException($"Invalid source of type '{source.GetType().FullName}' found.");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+        File.Copy(driveBlobClient.FilePath, FilePath);
+    }
+
+    public async Task<IBlobProperties> GetProperties()
+    {
+        await Task.CompletedTask;
+
+        return new DriveBlobProperties();
+    }
+
+    public async Task<bool> DeleteIfExists()
+    {
+        await Task.CompletedTask;
+
+        if (File.Exists(FilePath))
         {
-            await Task.CompletedTask;
+            File.Delete(FilePath);
 
-            if (source is null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            var driveBlobClient = source as DriveBlobClient ??
-                throw new ArgumentException($"Invalid source of type '{source.GetType().FullName}' found.");
-
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            File.Copy(driveBlobClient.FilePath, FilePath);
+            return true;
         }
 
-        public async Task<IBlobProperties> GetProperties()
-        {
-            await Task.CompletedTask;
+        return false;
+    }
 
-            return new DriveBlobProperties();
-        }
+    public async Task Upload(byte[] bytes, AccessTier? _)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+        await File.WriteAllBytesAsync(FilePath, bytes);
+    }
 
-        public async Task<bool> DeleteIfExists()
-        {
-            await Task.CompletedTask;
-
-            if (File.Exists(FilePath))
-            {
-                File.Delete(FilePath);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public async Task Upload(byte[] bytes, AccessTier? _)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            await File.WriteAllBytesAsync(FilePath, bytes);
-        }
-
-        public async Task<byte[]> Download()
-        {
-            return await File.ReadAllBytesAsync(FilePath);
-        }
+    public async Task<byte[]> Download()
+    {
+        return await File.ReadAllBytesAsync(FilePath);
     }
 }

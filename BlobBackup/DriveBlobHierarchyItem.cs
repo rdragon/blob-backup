@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
-{
-    public record DriveBlobHierarchyItem(string BlobName) : IBlobHierarchyItem;
-}
+namespace BlobBackup;
+
+public record DriveBlobHierarchyItem(string BlobName) : IBlobHierarchyItem;

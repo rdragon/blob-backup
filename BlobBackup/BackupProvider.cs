@@ -6,130 +6,129 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public class BackupProvider
 {
-    public class BackupProvider
+    private readonly FileProvider _fileProvider;
+    private readonly Index _index;
+    private readonly BackupProviderSettings _settings;
+    private readonly ChunkProvider _chunkProvider;
+
+    public BackupProvider(
+        FileProvider fileProvider,
+        Index index,
+        BackupProviderSettings settings,
+        ChunkProvider chunkProvider)
     {
-        private readonly FileProvider _fileProvider;
-        private readonly Index _index;
-        private readonly BackupProviderSettings _settings;
-        private readonly ChunkProvider _chunkProvider;
+        _chunkProvider = chunkProvider;
+        _settings = settings;
+        _index = index;
+        _fileProvider = fileProvider;
+    }
 
-        public BackupProvider(
-            FileProvider fileProvider,
-            Index index,
-            BackupProviderSettings settings,
-            ChunkProvider chunkProvider)
+    /// <summary>
+    /// Loads the index, backups all files, removes not found file tokens from the index,
+    /// and finally saves the index again.
+    /// </summary>
+    public async Task BackupFileSystemFolder(Stopwatch? stopwatch = null)
+    {
+        var success = false;
+
+        try
         {
-            _chunkProvider = chunkProvider;
-            _settings = settings;
-            _index = index;
-            _fileProvider = fileProvider;
+            await Run();
         }
-
-        /// <summary>
-        /// Loads the index, backups all files, removes not found file tokens from the index,
-        /// and finally saves the index again.
-        /// </summary>
-        public async Task BackupFileSystemFolder(Stopwatch? stopwatch = null)
+        finally
         {
-            var success = false;
-
-            try
+            if (stopwatch is { })
             {
-                await Run();
-            }
-            finally
-            {
-                if (stopwatch is { })
-                {
-                    Helper.WriteLine($"Backup {(success ? "done in" : "failed after")} {stopwatch.GetPrettyElapsedTime()}.");
-                }
-            }
-
-            async Task Run()
-            {
-                await _index.LoadIndex();
-
-                var stopwatch = Stopwatch.StartNew();
-                var foundFileIds = _fileProvider.GetAllFileIds().ToHashSet();
-                Helper.WriteLine($"Generating a list of all {foundFileIds.Count:N0} files took {stopwatch.GetPrettyElapsedTime()}.");
-
-                foreach (var fileId in foundFileIds)
-                {
-                    await BackupFile(fileId);
-                }
-
-                await _chunkProvider.Flush();
-
-                _index.RemoveFileTokens(foundFileIds);
-
-                success = true;
-
-                await _index.SaveIndex();
+                Helper.WriteLine($"Backup {(success ? "done in" : "failed after")} {stopwatch.GetPrettyElapsedTime()}.");
             }
         }
 
-        private async Task BackupFile(FileId fileId)
+        async Task Run()
         {
-            var fileInfo = _fileProvider.GetFileInfo(fileId);
+            await _index.LoadIndex();
 
-            if (fileInfo.hidden || IsUpToDate(fileId, fileInfo.length, fileInfo.lastWriteTimeUtc))
+            var stopwatch = Stopwatch.StartNew();
+            var foundFileIds = _fileProvider.GetAllFileIds().ToHashSet();
+            Helper.WriteLine($"Generating a list of all {foundFileIds.Count:N0} files took {stopwatch.GetPrettyElapsedTime()}.");
+
+            foreach (var fileId in foundFileIds)
             {
-                return;
+                await BackupFile(fileId);
             }
 
-            var totalLength = 0L;
-            var chunkIds = new List<ChunkId>();
-            using var fileStream = _fileProvider.OpenRead(fileId);
-            var shardSize = _settings.ShardSizeBytes;
-            var buffer = new byte[Math.Min(shardSize, fileInfo.length)];
-            var foundNewFile = false;
+            await _chunkProvider.Flush();
 
-            while (true)
-            {
-                var length = await fileStream.ReadAsync(buffer);
+            _index.RemoveFileTokens(foundFileIds);
 
-                if (totalLength > 0 && length == 0)
-                {
-                    break;
-                }
+            success = true;
 
-                totalLength += length;
-                var bytes = buffer[..length];
-                var chunkId = new ChunkId(bytes.GetSha256Hash()[..Constants.CHUNK_ID_BYTES]);
+            await _index.SaveIndex();
+        }
+    }
 
-                if (!foundNewFile && !_index.ContainsChunkId(chunkId))
-                {
-                    foundNewFile = true;
-                    Helper.WriteLine($"Found new file '{fileId}'.");
-                }
+    private async Task BackupFile(FileId fileId)
+    {
+        var fileInfo = _fileProvider.GetFileInfo(fileId);
 
-                await _chunkProvider.BackupChunk(new Chunk(ChunkId: chunkId, Raw: new Raw(bytes)));
-                chunkIds.Add(chunkId);
-
-                if (length == 0)
-                {
-                    break;
-                }
-            }
-
-            var fileToken = new FileToken(totalLength, fileInfo.lastWriteTimeUtc, chunkIds);
-
-            if (!foundNewFile && !_index.ContainsFileToken(fileId))
-            {
-                Helper.WriteLine($"Found new copy '{fileId}'.");
-            }
-
-            _index.AddOrReplaceFileToken(fileId, fileToken);
+        if (fileInfo.hidden || IsUpToDate(fileId, fileInfo.length, fileInfo.lastWriteTimeUtc))
+        {
+            return;
         }
 
-        private bool IsUpToDate(FileId fileId, long length, DateTime lastWriteTimeUtc)
+        var totalLength = 0L;
+        var chunkIds = new List<ChunkId>();
+        using var fileStream = _fileProvider.OpenRead(fileId);
+        var shardSize = _settings.ShardSizeBytes;
+        var buffer = new byte[Math.Min(shardSize, fileInfo.length)];
+        var foundNewFile = false;
+
+        while (true)
         {
-            return
-                _index.TryGetFileToken(fileId, out var backupView) &&
-                backupView.Length == length &&
-                backupView.LastWriteTimeUtc == lastWriteTimeUtc;
+            var length = await fileStream.ReadAsync(buffer);
+
+            if (totalLength > 0 && length == 0)
+            {
+                break;
+            }
+
+            totalLength += length;
+            var bytes = buffer[..length];
+            var chunkId = new ChunkId(bytes.GetSha256Hash()[..Constants.CHUNK_ID_BYTES]);
+
+            if (!foundNewFile && !_index.ContainsChunkId(chunkId))
+            {
+                foundNewFile = true;
+                Helper.WriteLine($"Found new file '{fileId}'.");
+            }
+
+            await _chunkProvider.BackupChunk(new Chunk(ChunkId: chunkId, Raw: new Raw(bytes)));
+            chunkIds.Add(chunkId);
+
+            if (length == 0)
+            {
+                break;
+            }
         }
+
+        var fileToken = new FileToken(totalLength, fileInfo.lastWriteTimeUtc, chunkIds);
+
+        if (!foundNewFile && !_index.ContainsFileToken(fileId))
+        {
+            Helper.WriteLine($"Found new copy '{fileId}'.");
+        }
+
+        _index.AddOrReplaceFileToken(fileId, fileToken);
+    }
+
+    private bool IsUpToDate(FileId fileId, long length, DateTime lastWriteTimeUtc)
+    {
+        return
+            _index.TryGetFileToken(fileId, out var backupView) &&
+            backupView.Length == length &&
+            backupView.LastWriteTimeUtc == lastWriteTimeUtc;
     }
 }

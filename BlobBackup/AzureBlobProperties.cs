@@ -5,19 +5,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+public class AzureBlobProperties : IBlobProperties
 {
-    public class AzureBlobProperties : IBlobProperties
+    private readonly BlobProperties _blobProperties;
+
+    public AzureBlobProperties(BlobProperties blobProperties)
     {
-        private readonly BlobProperties _blobProperties;
-
-        public AzureBlobProperties(BlobProperties blobProperties)
-        {
-            _blobProperties = blobProperties;
-        }
-
-        public string AccessTier => _blobProperties.AccessTier;
-
-        public CopyStatus CopyStatus => _blobProperties.CopyStatus;
+        _blobProperties = blobProperties;
     }
+
+    public string AccessTier => _blobProperties.AccessTier;
+
+    public CopyStatus CopyStatus => _blobProperties.CopyStatus;
 }

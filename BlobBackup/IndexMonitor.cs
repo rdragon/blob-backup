@@ -5,45 +5,44 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlobBackup
+namespace BlobBackup;
+
+/// <summary>
+/// Keeps track of whether shards have been created or deleted and the stored index doesn't know this yet.
+/// The state of this class is persisted between multiple runs of the application.
+/// </summary>
+public class IndexMonitor
 {
-    /// <summary>
-    /// Keeps track of whether shards have been created or deleted and the stored index doesn't know this yet.
-    /// The state of this class is persisted between multiple runs of the application.
-    /// </summary>
-    public class IndexMonitor
+    private readonly BlobProvider _blobProvider;
+
+    public IndexMonitor(BlobProvider blobProvider)
     {
-        private readonly BlobProvider _blobProvider;
+        _blobProvider = blobProvider;
+    }
 
-        public IndexMonitor(BlobProvider blobProvider)
+
+    private bool? _shardsChanged;
+
+    public bool ShardsChanged
+    {
+        get
         {
-            _blobProvider = blobProvider;
+            if (_shardsChanged is null)
+            {
+                _shardsChanged = _blobProvider.GetShardsChanged().Result;
+            }
+
+            return _shardsChanged.Value;
         }
-
-
-        private bool? _shardsChanged;
-
-        public bool ShardsChanged
+        set
         {
-            get
+            if (ShardsChanged == value)
             {
-                if (_shardsChanged is null)
-                {
-                    _shardsChanged = _blobProvider.GetShardsChanged().Result;
-                }
-
-                return _shardsChanged.Value;
+                return;
             }
-            set
-            {
-                if (ShardsChanged == value)
-                {
-                    return;
-                }
 
-                _blobProvider.SetShardsChanged(value).Wait();
-                _shardsChanged = value;
-            }
+            _blobProvider.SetShardsChanged(value).Wait();
+            _shardsChanged = value;
         }
     }
 }
