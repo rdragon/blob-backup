@@ -125,6 +125,7 @@ static int HandleException(Exception ex)
 {
     Helper.WriteLine();
     Helper.WriteLine($"Error: {ex}");
+    Helper.WriteLine("Use --delete-secrets to delete the saved connection string and cipher key.");
 
     return 1;
 }

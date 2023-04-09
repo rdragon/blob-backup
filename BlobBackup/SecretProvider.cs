@@ -11,7 +11,7 @@ public class SecretProvider
         _settings = settings;
     }
 
-    public async Task<string> GetSecret(SecretType secretType, bool recache = false)
+    public async Task<string> GetSecret(SecretType secretType, bool recache = false, string? extraInfo = null)
     {
         if (secretType == SecretType.CipherKey && _settings.CipherSecret is string cipherSecret)
         {
@@ -25,7 +25,8 @@ public class SecretProvider
 
         if (!File.Exists(GetPath(secretType)) || recache)
         {
-            Helper.WriteLine($"{secretType} not found. Please provide the {secretType}:");
+            extraInfo = extraInfo is { } ? ". " + extraInfo : "";
+            Helper.WriteLine($"{secretType} not found. Please provide the {secretType}{extraInfo}:");
 
             if (Console.ReadLine() is not string secret)
             {

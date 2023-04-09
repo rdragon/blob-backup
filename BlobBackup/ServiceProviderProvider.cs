@@ -111,7 +111,9 @@ public class ServiceProviderProvider
 
     private static async Task<string> GetConnectionString(SecretProviderSettings secretProviderSettings)
     {
-        return await new SecretProvider(secretProviderSettings).GetSecret(SecretType.ConnectionString);
+        var extraInfo = "Enter the value \"UseDevelopmentStorage=true\" if no Azure connection is required";
+
+        return await new SecretProvider(secretProviderSettings).GetSecret(SecretType.ConnectionString, extraInfo: extraInfo);
     }
 
     private static void DeleteSecrets(SecretProviderSettings secretProviderSettings)
