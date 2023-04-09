@@ -2,7 +2,7 @@
 Store long-term backups in the Azure Blob Storage archive access tier.
 
 ## Quick Start
-- Install the [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+- Install the [.NET 7.0 SDK](https://dotnet.microsoft.com/download/dotnet/7.0)
 - Obtain an [Azure Blob Storage](https://azure.microsoft.com/en-us/services/storage/blobs/#get-started) connection string
 - Backup the `.git` folder: `dotnet run -p BlobBackup -- .git git -cc`. When asked for a connection string, paste the connection string from the previous step. When asked for a cipher key, enter any string.
 
