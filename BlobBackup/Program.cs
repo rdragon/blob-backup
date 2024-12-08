@@ -1,6 +1,6 @@
 ﻿using Azure.Storage.Blobs.Models;
 using BlobBackup;
-using Microsoft.Extensions.CommandLineUtils;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.Text.Json;
@@ -36,7 +36,7 @@ var sevenZip = AddSevenZip(app);
 var fileSystemFolder = app.Argument("file-system-folder", "Required. The folder to backup or restore.");
 var blobStorageFolder = app.Argument("blob-storage-folder", "Required. The blob storage folder to use.");
 
-app.OnExecute(async () =>
+app.OnExecuteAsync(async _ =>
 {
     try
     {
@@ -332,7 +332,7 @@ static int GetShardSizeBytes(CommandOption shardSize)
 {
     if (shardSize.HasValue())
     {
-        var number = int.Parse(shardSize.Value());
+        var number = int.Parse(shardSize.Value()!);
 
         if (number <= 0)
         {
